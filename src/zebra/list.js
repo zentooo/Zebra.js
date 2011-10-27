@@ -19,6 +19,9 @@
         return res;
     }
 
+    List.prototype.forEach = forEach;
+    List.prototype.all = all;
+
     Zebra.List = List;
 
 })();
