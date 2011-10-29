@@ -1,10 +1,13 @@
 (function() {
 
+    var testId = 0;
+
     function Test(msg, async) {
         this.msg = msg;
         this.async = async;
         this.callback = function() {};
         this.timeout = false;
+        this.nomatch = false;
 
         this.desc = void 0;
         this.result = false;
@@ -16,6 +19,8 @@
         this.resultList = new Zebra.List();
 
         this.parent = void 0;
+
+        this.id = ++testId;
     }
 
     function push(promise, msg) {
@@ -44,23 +49,24 @@
             if ( test instanceof Test ) {
                 if ( test.async ) {
                     wait++;
-                    console.log("wait "+ wait);
-                    test.run(that, void 0, function(r, d) {
+                    console.log("wait on " + that.id + " " + wait);
+
+                    test.run(that, void 0,  function(t) {
                         that.resultList.push({
-                            result: r,
+                            result: t.result,
                             msg: test.msg,
-                            desc: d
+                            desc: t.desc
                         });
 
                         runned++;
-                        console.log("runned "+ runned);
+                        console.log("runned on " + that.id + " " + runned);
 
-                        if ( wait === runned && ! test.timeout ) {
-                            that.result = that.resultList.all(function(item) {
-                                return item.result;
-                            });
-                            that.callback(that.result, that.desc);
-                            console.log("final callback called");
+                        if ( wait === runned && ! test.timeout && ! test.nomatch ) {
+                            that.update();
+                            that.callback(that);
+                            clearTimeout(that.timeoutId);
+
+                            console.log("final callback called of " + that.id);
                         }
                     });
                 }
@@ -87,28 +93,41 @@
                 });
             }
 
+            // asyncronous after?
             if ( typeof parent.after === "function" ) {
                 parent.after();
             }
+
 
             Zebra.Output.write(result, test.msg, desc);
         });
 
 
-        that.result = that.resultList.all(function(item) {
-            return item.result;
-        });
-
         if ( that.async && wait === 0 ) {
-            that.callback(that.result, that.desc);
+            that.update();
+            that.callback(that);
+            clearTimeout(that.timeoutId);
         }
 
-        if ( that.resultList.length !== that.testList.length ) {
-            that.desc = "test number and result number not matched";
-            that.result = false;
-        }
+        that.update();
+
+        //if ( that.resultList.length !== that.testList.length ) {
+            //that.nomatch = true;
+            //that.desc = "test number and result number not matched";
+            //that.result = false;
+        //}
 
         return that.result;
+    }
+
+    function update() {
+        this.result = this.resultList.all(function(item) {
+            return item.result;
+        });
+        if ( this.parent ) {
+            console.log("call parent update of " + this.id);
+            this.parent.update();
+        }
     }
 
     function run(parent, timeout, callback) {
@@ -119,10 +138,13 @@
 
             that.callback = callback || function() {};
 
-            setTimeout(function() {
+            that.timeoutId = setTimeout(function() {
                 that.timeout = true;
                 that.result = false;
                 that.desc = "Async test timed out";
+                console.log("timeout of " + that.id);
+                that.callback(that);
+                that.update();
             }, timeout || Test.defaultTimeout);
         }
         else {
@@ -136,6 +158,7 @@
         tp.push = push;
         tp.start = start;
         tp.run = run;
+        tp.update = update;
     })(Test.prototype);
 
     Test.defaultTimeout = 5000;

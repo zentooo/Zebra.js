@@ -6,22 +6,27 @@
         results: []
     };
 
-    function push(msg, callback, async, timeout) {
-        var t = new Zebra.Test(msg, async),
+    function push(msg, testBlock, async, timeout) {
+        var test = new Zebra.Test(msg, async),
             prev = Zebra.current,
-            result = true;
+            result = true,
+            that = this;
 
-        Zebra.Runner.current = t;
+        Zebra.Runner.current = test;
         Zebra.Runner.depth += 1;
 
-        callback(t);
+        testBlock(test);
 
         if ( prev instanceof Zebra.Test ) {
             prev.push(t);
         }
         else {
-            t.run(prev, timeout);
-            this.results.push(t);
+            if ( test.async ) {
+                test.run(prev, timeout, function(t) {
+                    that.results.push(t);
+                });
+            }
+            that.results.push(test);
         }
 
         Zebra.Runner.current = prev;
