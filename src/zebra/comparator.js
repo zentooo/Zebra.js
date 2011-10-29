@@ -1,5 +1,5 @@
 (function() {
-    var Comparotor = {};
+    var Comparator = {};
 
     function equal(a, b) {
         return a === b;
@@ -18,22 +18,19 @@
         if ( typeA !== typeB ) {
             return false;
         }
-        else if ( a === b ) {
-            return true;
-        }
         else if ( typeA === "object" && typeB === "object" ) {
             for ( k in a ) if ( a.hasOwnProperty(k) ) {
-                res = deepEqual(a[k], b[k]);
+                res = res && deepEqual(a[k], b[k]);
             }
             return res;
         }
         else {
-            return false;
+            return a === b;
         }
     }
 
-    Comparotor.equal = equal;
-    Comparotor.deepEqual = deepEqual;
+    Comparator.equal = equal;
+    Comparator.deepEqual = deepEqual;
 
-    Zebra.Comparotor = Comparotor;
+    Zebra.Comparator = Comparator;
 })();

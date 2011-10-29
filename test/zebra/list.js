@@ -7,7 +7,7 @@ test("forEach", function() {
     list.push(1);
 
     list.forEach(spy);
-    ok ( spy.calledThrice, "spy called thrice by forEach" );
+    ok(spy.calledThrice, "spy called thrice by forEach");
 });
 
 test("all", function() {
@@ -23,6 +23,6 @@ test("all", function() {
     list_ng.push(false);
     list_ok.push(true);
 
-    ok ( list_ok.all(function(i) { return i; } ), "all true => true" );
-    ok ( ! list_ng.all(function(i) { return i; } ), "not all true => false" );
+    ok (list_ok.all(function(i) { return i; } ), "all true => true");
+    ok (! list_ng.all(function(i) { return i; } ), "not all true => false");
 });
