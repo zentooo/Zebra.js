@@ -110,13 +110,6 @@
         }
 
         that.update();
-
-        //if ( that.resultList.length !== that.testList.length ) {
-            //that.nomatch = true;
-            //that.desc = "test number and result number not matched";
-            //that.result = false;
-        //}
-
         return that.result;
     }
 
