@@ -12,8 +12,8 @@
             result = true,
             that = this;
 
-        Zebra.Runner.current = test;
-        Zebra.Runner.depth += 1;
+        that.current = test;
+        that.depth += 1;
 
         testBlock(test);
 
@@ -26,11 +26,14 @@
                     that.results.push(t);
                 });
             }
-            that.results.push(test);
+            else {
+                test.run(prev, timeout);
+                that.results.push(test);
+            }
         }
 
-        Zebra.Runner.current = prev;
-        Zebra.Runner.depth -= 1;
+        that.current = prev;
+        that.depth -= 1;
     }
 
     Runner.push = push;

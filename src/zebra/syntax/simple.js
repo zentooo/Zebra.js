@@ -4,8 +4,8 @@
 
     // matchers
 
-    function push(promise, msg) {
-        Zebra.Runner.current.push(promise, msg);
+    function push(future, msg) {
+        Zebra.Runner.current.push(future, msg);
     }
 
     function ok(a, msg) {

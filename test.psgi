@@ -34,6 +34,7 @@ __DATA__
 
 	<script type="text/javascript" src="/src/zebra.js"></script>
 	<script type="text/javascript" src="/src/zebra/list.js"></script>
+	<script type="text/javascript" src="/src/zebra/test.js"></script>
 
 	<script type="text/javascript" src="/test/helper.js"></script>
 	<script type="text/javascript" src="/test/lib/sinon-1.1.1.js"></script>

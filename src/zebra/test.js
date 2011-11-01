@@ -23,13 +23,13 @@
         this.id = ++testId;
     }
 
-    function push(promise, msg) {
-        if ( promise instanceof Test ) {
-            this.testList.push(promise);
+    function push(future, msg) {
+        if ( future instanceof Test ) {
+            this.testList.push(future);
         }
         else {
             this.testList.push({
-                promise: promise,
+                future: future,
                 msg: msg
             });
         }
@@ -80,7 +80,7 @@
             }
             else {
                 try {
-                    result = test.promise();
+                    result = test.future();
                 }
                 catch(e) {
                     result = false;
