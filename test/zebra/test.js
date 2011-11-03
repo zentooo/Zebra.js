@@ -19,11 +19,11 @@ test("Zebra.Test.prototype.push", function() {
     var t1 = new Zebra.Test("msg1", false);
     var t2 = new Zebra.Test("msg2", false);
 
-    var promise = function() {};
+    var future = function() {};
     var msg = "msg";
 
-    t1.push(promise, msg);
-    isd(t1.testList[0], { promise: promise, msg: msg });
+    t1.push(future, msg);
+    isd(t1.testList[0], { future: future, msg: msg });
 
     t1.push(t2);
     isd(t1.testList[1], t2);
