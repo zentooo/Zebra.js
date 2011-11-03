@@ -3,7 +3,7 @@
     function Promise(callback, errorback, cancelback) {
         this.value = void 0;
         this.error = void 0;
-        this.canceled = true;
+        this.canceled = false;
         this.done = false;
         this.callback = callback;
         this.errorback = errorback;
@@ -43,7 +43,7 @@
         }
     }
 
-    function cancel(error) {
+    function cancel() {
         if ( this.cancelback ) {
             this.cancelback();
         }
@@ -64,15 +64,24 @@
         for ( ; i < iz; ++i ) {
             (function(org, i){
                 promises[i].callback = function(value) {
-                    org(value);
-                    joinDone(promises[i]);
+
                     done++;
 
+                    org(value);
+                    joinDone(promises[i]);
+
+                    console.log("done of " + promises[i].id);
+                    console.log("done = " + done);
+                    console.log("all = " + iz);
+
                     if ( done === iz ) {
-                        that.complete(promises[i].value);
+                        that.complete(promises.all(function(item) {
+                            return item.value;
+                        }));
+                        console.log("complete of " + that.id);
                     }
                 };
-            })(promises[i].callback, i);
+            })(promises[i].callback || function() {}, i);
         }
     }
 

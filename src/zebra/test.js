@@ -6,146 +6,98 @@
         this.msg = msg;
         this.async = async;
         this.callback = function() {};
-        this.timeout = false;
-        this.nomatch = false;
 
         this.desc = void 0;
-        this.result = false;
 
         this.before = void 0;
         this.after = void 0;
 
         this.testList = new Zebra.List();
-        this.resultList = new Zebra.List();
 
         this.parent = void 0;
 
         this.id = ++testId;
     }
 
-    function push(future, msg) {
-        if ( future instanceof Test ) {
-            this.testList.push(future);
+    function push(t, msg, context) {
+        var test;
+        if ( t instanceof Test ) {
+            this.testList.push(t);
         }
         else {
-            this.testList.push({
-                future: future,
-                msg: msg
-            });
+            test = new Test(msg, false);
+            test.run = function() {
+                if ( t.call(context) ) {
+                    test.complete(true);
+                }
+                else {
+                    test.fail("failed");
+                }
+            };
+            this.testList.push(test);
         }
     }
 
     function start(parent) {
-        var that = this, wait = 0, runned = 0;
+        var that = this;
         parent = parent || that.parent || {};
 
-        that.testList.forEach(function(test) {
-            var result, desc;
+        that.join(that.testList, function(t) {
+            Zebra.Output.write(test.value, test.msg, test.desc);
 
-            if ( typeof parent.before === "function" ) {
-                parent.before();
-            }
-
-            if ( test instanceof Test ) {
-                if ( test.async ) {
-                    wait++;
-                    console.log("wait on " + that.id + " " + wait);
-
-                    test.run(that, void 0,  function(t) {
-                        that.resultList.push({
-                            result: t.result,
-                            msg: test.msg,
-                            desc: t.desc
-                        });
-
-                        runned++;
-                        console.log("runned on " + that.id + " " + runned);
-
-                        if ( wait === runned && ! test.timeout && ! test.nomatch ) {
-                            that.update();
-                            that.callback(that);
-                            clearTimeout(that.timeoutId);
-
-                            console.log("final callback called of " + that.id);
-                        }
-                    });
-                }
-                else {
-                    that.resultList.push({
-                        result: test.run(that),
-                        msg: test.msg,
-                        desc: test.desc
-                    });
-                }
-            }
-            else {
-                try {
-                    result = test.future();
-                }
-                catch(e) {
-                    result = false;
-                    desc = e;
-                }
-                that.resultList.push({
-                    result: result,
-                    msg: test.msg,
-                    desc: desc
-                });
-            }
-
-            // asyncronous after?
             if ( typeof parent.after === "function" ) {
                 parent.after();
             }
-
-
-            Zebra.Output.write(result, test.msg, desc);
         });
 
-
-        if ( that.async && wait === 0 ) {
-            that.update();
-            that.callback(that);
-            clearTimeout(that.timeoutId);
-        }
-
-        that.update();
-        return that.result;
+        that.testList.forEach(function(test) {
+            if ( typeof parent.before === "function" ) {
+                parent.before();
+            }
+            try {
+                test.run(that);
+            } catch(e) {
+                that.fail(e);
+            }
+        });
     }
 
     function update() {
-        this.result = this.resultList.all(function(item) {
-            return item.result;
+        this.value = this.testList.all(function(item) {
+            return item.value;
         });
-        if ( this.parent ) {
+        if ( this.parent && typeof this.parent.update === "function" ) {
             console.log("call parent update of " + this.id);
             this.parent.update();
         }
     }
 
     function run(parent, timeout, callback) {
-        var that = this;
+        var that = this, org = that.callback;
         that.parent = parent;
 
         if ( that.async ) {
-
-            that.callback = callback || function() {};
+            that.callback = function() {
+                clearTimeout(that.timeoutId);
+                org();
+                console.log("all joined on " + that.id);
+                if ( typeof callback === "function" ) {
+                    callback();
+                }
+            };
 
             that.timeoutId = setTimeout(function() {
-                that.timeout = true;
-                that.result = false;
-                that.desc = "Async test timed out";
                 console.log("timeout of " + that.id);
-                that.callback(that);
+                that.fail("Async test timed out");
                 that.update();
             }, timeout || Test.defaultTimeout);
         }
         else {
-            that.result = that.start(parent);
+            that.start(parent);
         }
-
-        return that.result;
     }
+
+    Test.prototype = new Zebra.Promise();
 
     (function(tp) {
         tp.push = push;

@@ -34,6 +34,7 @@ __DATA__
 
 	<script type="text/javascript" src="/src/zebra.js"></script>
 	<script type="text/javascript" src="/src/zebra/list.js"></script>
+	<script type="text/javascript" src="/src/zebra/promise.js"></script>
 	<script type="text/javascript" src="/src/zebra/test.js"></script>
 
 	<script type="text/javascript" src="/test/helper.js"></script>
